@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  /* Volle Höhe trotz ein-/ausfahrender Browserleiste (iOS/Android). */
+  #root {
+    min-height: 100dvh;
+  }
+
+  body {
+    @apply bg-bg text-white font-sans antialiased;
+    background-image:
+      radial-gradient(60% 50% at 50% 0%, rgba(168, 85, 247, 0.12), transparent 70%),
+      radial-gradient(40% 30% at 100% 10%, rgba(217, 70, 239, 0.1), transparent 70%);
+    background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  /* Bedienelemente: keine versehentliche Textauswahl/Lupe am Handy. */
+  button,
+  a,
+  [role='button'] {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation; /* entfernt die 300ms-Tap-Verzögerung */
+  }
+
+  /* iOS zoomt beim Fokus auf Felder mit < 16px Schrift. Auf kleinen
+     Screens daher alle Eingabefelder auf 16px zwingen (überschreibt
+     auch Tailwinds .text-sm dank höherer Spezifität). */
+  @media (max-width: 640px) {
+    input[class],
+    textarea[class],
+    select[class] {
+      font-size: 16px;
+    }
+  }
+
+  /* Schlanker Scrollbalken */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-line rounded-full;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-bg-card/80 backdrop-blur-sm;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+      font-semibold transition active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100;
+  }
+
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-accent to-accent-glow text-white shadow-glow
+      hover:brightness-110;
+  }
+
+  .btn-ghost {
+    @apply btn border border-line bg-bg-elevated/60 text-white/80 hover:text-white;
+  }
+
+  /* Loading-Skeleton mit Shimmer */
+  .skeleton {
+    @apply relative overflow-hidden rounded-xl bg-bg-elevated;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+/* iOS safe-area Hilfsklassen */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px));
+}
+.pt-safe {
+  padding-top: calc(env(safe-area-inset-top, 0px));
+}

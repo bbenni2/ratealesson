@@ -1,0 +1,26 @@
+{
+  "name": "Rate a Lesson",
+  "short_name": "Rate a Lesson",
+  "description": "Bewerte deine Stunden – anonym, in Echtzeit.",
+  "lang": "de-AT",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "star.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
