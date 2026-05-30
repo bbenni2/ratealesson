@@ -44,13 +44,17 @@ export function HistoryView() {
     })
   }, [lessons, subject, onlyRatable, now])
 
-  // Nach Tag gruppieren (Reihenfolge bleibt: neueste zuerst).
+  // Nach Tag gruppieren: Tage neueste zuerst, innerhalb eines Tages
+  // chronologisch (1. Stunde oben).
   const grouped = useMemo(() => {
     const map = new Map<string, LessonInstance[]>()
     for (const l of filtered) {
       const arr = map.get(l.date) ?? []
       arr.push(l)
       map.set(l.date, arr)
+    }
+    for (const arr of map.values()) {
+      arr.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
     }
     return [...map.entries()]
   }, [filtered])
