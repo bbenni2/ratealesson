@@ -2,27 +2,29 @@ import type { Period } from '../types'
 
 // ════════════════════════════════════════════════════════════
 //  SCHULSTUNDEN / GLOCKENZEITEN
-//  Österreichisches Schema: 1. Stunde ab 07:55, je ~45 Min,
-//  mit Pausen dazwischen.
+//  Exakt nach eurem Stundenplan (mit Mittagspause 13:15–13:45).
 //
-//  👉 Wenn an deiner Schule andere Zeiten gelten, passe hier
-//     einfach start/end an. "HH:mm" im 24h-Format.
+//  👉 Wenn sich Zeiten ändern, einfach start/end anpassen.
+//     Format "HH:mm" im 24h-Format.
 // ════════════════════════════════════════════════════════════
 
 export const PERIODS: Period[] = [
-  { period: 1, start: '07:55', end: '08:45' },
-  { period: 2, start: '08:45', end: '09:35' },
-  // große Pause 09:35–09:50
-  { period: 3, start: '09:50', end: '10:40' },
-  { period: 4, start: '10:40', end: '11:30' },
-  // Pause 11:30–11:40
-  { period: 5, start: '11:40', end: '12:30' },
-  { period: 6, start: '12:30', end: '13:20' },
-  // Mittagspause 13:20–13:50
-  { period: 7, start: '13:50', end: '14:40' },
-  { period: 8, start: '14:40', end: '15:30' },
-  { period: 9, start: '15:30', end: '16:20' },
-  { period: 10, start: '16:20', end: '17:10' },
+  { period: 1, start: '07:45', end: '08:35' },
+  { period: 2, start: '08:35', end: '09:25' },
+  // kurze Pause 09:25–09:30
+  { period: 3, start: '09:30', end: '10:20' },
+  // Pause 10:20–10:35
+  { period: 4, start: '10:35', end: '11:25' },
+  // Pause 11:25–11:30
+  { period: 5, start: '11:30', end: '12:20' },
+  // Pause 12:20–12:25
+  { period: 6, start: '12:25', end: '13:15' },
+  // Mittagspause 13:15–13:45
+  { period: 7, start: '13:45', end: '14:35' },
+  { period: 8, start: '14:35', end: '15:25' },
+  { period: 9, start: '15:25', end: '16:15' },
+  { period: 10, start: '16:15', end: '17:05' },
+  { period: 11, start: '17:05', end: '17:55' },
 ]
 
 /** Schnelles Nachschlagen einer Period anhand ihrer Nummer. */

@@ -1,31 +1,25 @@
 import type { TimetableEntry, Weekday } from '../types'
 
 // ════════════════════════════════════════════════════════════
-//  📅  STUNDENPLAN  –  HIER BEARBEITEST DU DEINEN PLAN
+//  📅  GEMEINSAMER STUNDENPLAN  (für die ganze Klasse gleich)
 // ════════════════════════════════════════════════════════════
 //
-//  Aufbau: pro Wochentag eine Liste von Stunden.
-//  Wochentage:  1 = Montag, 2 = Dienstag, 3 = Mittwoch,
-//               4 = Donnerstag, 5 = Freitag.
-//  (0 = Sonntag, 6 = Samstag – normalerweise leer.)
+//  Hier kommen NUR die Stunden rein, die ALLE gemeinsam haben
+//  (Mathe, Physik, Chemie, …). NICHT hierher gehören:
+//    • Sprachen (Italienisch / Latein / Spanisch)
+//    • Religion / Ethik
+//    • Wahlpflichtfächer
+//  Die trägt jede:r selbst in der App ein („Deine Kurse").
 //
+//  Wochentage: 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr.
 //  Jede Stunde:
-//    period   = Stundennummer (muss zu config/periods.ts passen)
-//    subject  = Fach (Pflicht)
-//    teacher  = Lehrkraft  (optional)
-//    room     = Raum       (optional)
-//    emoji    = Emoji      (optional, nur Deko)
+//    period  = Stundennummer (siehe config/periods.ts)
+//    subject = Fach (Pflicht)
+//    teacher/room/emoji = optional
 //
-//  Die unten stehenden Fächer sind PLATZHALTER – einfach
-//  überschreiben. Stunden, die es nicht gibt, weglassen.
-//
-//  ⚠️ WICHTIG seit der Kurs-Funktion:
-//  Hier kommen NUR die Stunden rein, die die GANZE Klasse
-//  gemeinsam hat. Variable Slots (Sprachen wie Italienisch/
-//  Latein/Spanisch, Religion/Ethik, Wahlpflicht …) gehören
-//  NICHT hierher – die trägt jede:r selbst in der App unter
-//  „Einstellungen → Deine Kurse" ein. So sieht jede:r den
-//  eigenen Plan und bewertet nur die eigenen Stunden.
+//  ⚠️ Aktuell ist nur MONTAG befüllt (aus dem Stundenplan-Bild).
+//     Di–Fr sind noch leer – bitte mit den echten Fächern füllen
+//     (oder Bilder schicken, dann ergänze ich sie).
 // ════════════════════════════════════════════════════════════
 
 export const TIMETABLE: Record<Weekday, TimetableEntry[]> = {
@@ -34,56 +28,30 @@ export const TIMETABLE: Record<Weekday, TimetableEntry[]> = {
 
   // Montag
   1: [
-    { period: 1, subject: 'Mathematik', teacher: 'Mag. Huber', room: 'B204', emoji: '📐' },
-    { period: 2, subject: 'Deutsch', teacher: 'Mag. Bauer', room: 'B204', emoji: '📚' },
-    { period: 3, subject: 'Englisch', teacher: 'Mag. Gruber', room: 'B204', emoji: '🇬🇧' },
-    { period: 4, subject: 'Geschichte', teacher: 'Mag. Wagner', room: 'B204', emoji: '🏛️' },
-    { period: 5, subject: 'Biologie', teacher: 'Mag. Pichler', room: 'NW1', emoji: '🧬' },
-    { period: 6, subject: 'Bewegung & Sport', teacher: 'Mag. Steiner', room: 'TH', emoji: '⚽' },
+    { period: 1, subject: 'Darstellende Geometrie', teacher: 'KR', room: 'INF2', emoji: '📐' },
+    { period: 2, subject: 'Darstellende Geometrie', teacher: 'KR', room: 'INF2', emoji: '📐' },
+    { period: 5, subject: 'Mathematik', teacher: 'KE', room: 'R7B', emoji: '🔢' },
+    { period: 6, subject: 'Physik', teacher: 'KP', room: 'PHS', emoji: '⚛️' },
+    { period: 7, subject: 'Chemie', teacher: 'BE', room: 'CHS', emoji: '🧪' },
+    // 3. Std = Sprachen · 4. Std = Religion/Ethik · 8./9. Std = Kurse
+    //         → das trägt jede:r selbst unter „Deine Kurse" ein.
   ],
 
-  // Dienstag
-  2: [
-    { period: 1, subject: 'Englisch', teacher: 'Mag. Gruber', room: 'B204', emoji: '🇬🇧' },
-    { period: 2, subject: 'Mathematik', teacher: 'Mag. Huber', room: 'B204', emoji: '📐' },
-    { period: 3, subject: 'Physik', teacher: 'Mag. Mayr', room: 'NW2', emoji: '⚛️' },
-    { period: 4, subject: 'Geografie', teacher: 'Mag. Wimmer', room: 'B204', emoji: '🌍' },
-    { period: 5, subject: 'Religion', teacher: 'Mag. Moser', room: 'B204', emoji: '✝️' },
-    { period: 6, subject: 'Bildnerische Erziehung', teacher: 'Mag. Lang', room: 'BE', emoji: '🎨' },
-  ],
+  // Dienstag  (noch leer – bitte ergänzen)
+  2: [],
 
-  // Mittwoch
-  3: [
-    { period: 1, subject: 'Deutsch', teacher: 'Mag. Bauer', room: 'B204', emoji: '📚' },
-    { period: 2, subject: 'Deutsch', teacher: 'Mag. Bauer', room: 'B204', emoji: '📚' },
-    { period: 3, subject: 'Mathematik', teacher: 'Mag. Huber', room: 'B204', emoji: '📐' },
-    { period: 4, subject: 'Chemie', teacher: 'Mag. Reiter', room: 'NW3', emoji: '🧪' },
-    { period: 5, subject: 'Informatik', teacher: 'Mag. Holzer', room: 'EDV1', emoji: '💻' },
-    { period: 6, subject: 'Informatik', teacher: 'Mag. Holzer', room: 'EDV1', emoji: '💻' },
-  ],
+  // Mittwoch  (noch leer – bitte ergänzen)
+  3: [],
 
-  // Donnerstag
-  4: [
-    { period: 1, subject: 'Geschichte', teacher: 'Mag. Wagner', room: 'B204', emoji: '🏛️' },
-    { period: 2, subject: 'Englisch', teacher: 'Mag. Gruber', room: 'B204', emoji: '🇬🇧' },
-    { period: 3, subject: 'Mathematik', teacher: 'Mag. Huber', room: 'B204', emoji: '📐' },
-    { period: 4, subject: 'Physik', teacher: 'Mag. Mayr', room: 'NW2', emoji: '⚛️' },
-    { period: 5, subject: 'Musikerziehung', teacher: 'Mag. Berger', room: 'MU', emoji: '🎵' },
-    { period: 6, subject: 'Bewegung & Sport', teacher: 'Mag. Steiner', room: 'TH', emoji: '🏀' },
-  ],
+  // Donnerstag  (noch leer – bitte ergänzen)
+  4: [],
 
-  // Freitag
-  5: [
-    { period: 1, subject: 'Biologie', teacher: 'Mag. Pichler', room: 'NW1', emoji: '🧬' },
-    { period: 2, subject: 'Geografie', teacher: 'Mag. Wimmer', room: 'B204', emoji: '🌍' },
-    { period: 3, subject: 'Deutsch', teacher: 'Mag. Bauer', room: 'B204', emoji: '📚' },
-    { period: 4, subject: 'Englisch', teacher: 'Mag. Gruber', room: 'B204', emoji: '🇬🇧' },
-    { period: 5, subject: 'Mathematik', teacher: 'Mag. Huber', room: 'B204', emoji: '📐' },
-  ],
+  // Freitag  (noch leer – bitte ergänzen)
+  5: [],
 
   // Samstag
   6: [],
 }
 
-/** Name der Klasse – erscheint im Header. Frei anpassbar. */
-export const CLASS_NAME = '4B'
+/** Name der Klasse (Fallback). Die aktive Klasse wählt man in der App. */
+export const CLASS_NAME = '7B'

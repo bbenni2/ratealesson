@@ -16,29 +16,40 @@ const WEEKDAYS: { value: Weekday; label: string }[] = [
 export function CourseEditor() {
   const { config, addCourse, removeCourse } = useStudentConfig()
 
+  // Auswahl
   const [name, setName] = useState('')
   const [teacher, setTeacher] = useState('')
+  const [custom, setCustom] = useState(false)
   const [weekday, setWeekday] = useState<Weekday>(1)
   const [period, setPeriod] = useState(PERIODS[0]?.period ?? 1)
   const [length, setLength] = useState<1 | 2>(1)
 
-  // Bekannter Kurs mit fest hinterlegter Lehrkraft? Dann keine Auswahl nötig.
-  const matched = COURSE_SUGGESTIONS.find(
-    (s) => s.name.toLowerCase() === name.trim().toLowerCase(),
-  )
-  const fixedTeacher = matched?.teacher
-  const effectiveTeacher = (fixedTeacher ?? teacher).trim() || undefined
+  function pickChip(n: string, t?: string) {
+    setCustom(false)
+    setName(n)
+    setTeacher(t ?? '')
+  }
 
   function add() {
     if (!name.trim()) return
-    addCourse({ name: name.trim(), teacher: effectiveTeacher, weekday, period, length })
+    addCourse({
+      name: name.trim(),
+      teacher: teacher.trim() || undefined,
+      weekday,
+      period,
+      length,
+    })
+    // Auswahl zurücksetzen, Tag/Stunde bleiben (oft mehrere Stunden am selben Tag)
     setName('')
     setTeacher('')
+    setCustom(false)
   }
 
   const sorted = [...config.courses].sort(
     (a, b) => a.weekday - b.weekday || a.period - b.period,
   )
+
+  const selectedChip = !custom ? name : '__custom__'
 
   return (
     <div className="space-y-4">
@@ -46,10 +57,7 @@ export function CourseEditor() {
       {sorted.length > 0 && (
         <ul className="space-y-2">
           {sorted.map((c) => (
-            <li
-              key={c.id}
-              className="card flex items-center gap-3 p-3"
-            >
+            <li key={c.id} className="card flex items-center gap-3 p-3">
               <span className="text-xl">🎓</span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">
@@ -73,44 +81,100 @@ export function CourseEditor() {
         </ul>
       )}
 
-      {/* Formular */}
-      <div className="card space-y-3 p-4">
+      {/* Hinzufügen */}
+      <div className="card space-y-4 p-4">
+        {/* 1) Fach antippen */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-white/50">Fach / Kurs</label>
-          <input
-            list="course-suggestions"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="z. B. Italienisch"
-            className="w-full rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
-          />
-          <datalist id="course-suggestions">
+          <p className="mb-2 text-xs font-medium text-white/50">1. Welcher Kurs?</p>
+          <div className="flex flex-wrap gap-2">
             {COURSE_SUGGESTIONS.map((s) => (
-              <option key={s.name} value={s.name} />
+              <button
+                key={s.name}
+                onClick={() => pickChip(s.name, s.teacher)}
+                className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${
+                  selectedChip === s.name
+                    ? 'border-accent bg-accent/20 text-white'
+                    : 'border-line bg-bg-card text-white/70 hover:border-accent/40'
+                }`}
+              >
+                {s.name}
+                {s.teacher && (
+                  <span
+                    className={selectedChip === s.name ? 'text-white/70' : 'text-white/35'}
+                  >
+                    {' '}
+                    · {s.teacher}
+                  </span>
+                )}
+              </button>
             ))}
-          </datalist>
-        </div>
+            <button
+              onClick={() => {
+                setCustom(true)
+                setName('')
+                setTeacher('')
+              }}
+              className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${
+                custom
+                  ? 'border-accent bg-accent/20 text-white'
+                  : 'border-line bg-bg-card text-white/70 hover:border-accent/40'
+              }`}
+            >
+              + Anderes
+            </button>
+          </div>
 
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-white/50">Lehrkraft</label>
-            {fixedTeacher ? (
-              <div className="flex items-center gap-1.5 rounded-xl border border-line bg-bg-elevated/60 px-3 py-2 text-sm">
-                <span className="font-semibold text-accent-soft">{fixedTeacher}</span>
-                <span className="text-xs text-white/35">· automatisch</span>
-              </div>
-            ) : (
+          {custom && (
+            <div className="mt-2.5 flex gap-2">
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Fach, z. B. Chor"
+                className="flex-[2] rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
+              />
               <input
                 value={teacher}
                 onChange={(e) => setTeacher(e.target.value)}
-                placeholder="optional"
-                className="w-full rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
+                placeholder="Lehrkraft"
+                className="flex-1 rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
               />
-            )}
+            </div>
+          )}
+        </div>
+
+        {/* 2) Wann? */}
+        <div>
+          <p className="mb-2 text-xs font-medium text-white/50">2. Wann hast du den Kurs?</p>
+          <div className="flex flex-wrap gap-1.5">
+            {WEEKDAYS.map((w) => (
+              <button
+                key={w.value}
+                onClick={() => setWeekday(w.value)}
+                className={`h-9 w-11 rounded-lg text-sm font-semibold transition ${
+                  weekday === w.value
+                    ? 'bg-accent text-white'
+                    : 'bg-bg-card text-white/55 hover:text-white'
+                }`}
+              >
+                {w.label}
+              </button>
+            ))}
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-white/50">Dauer</label>
-            <div className="flex overflow-hidden rounded-xl border border-line">
+
+          <div className="mt-2 flex gap-2">
+            <select
+              value={period}
+              onChange={(e) => setPeriod(Number(e.target.value))}
+              className="flex-1 rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
+            >
+              {PERIODS.map((p) => (
+                <option key={p.period} value={p.period}>
+                  {p.period}. Stunde ({p.start})
+                </option>
+              ))}
+            </select>
+            <div className="flex shrink-0 overflow-hidden rounded-xl border border-line">
               {([1, 2] as const).map((l) => (
                 <button
                   key={l}
@@ -123,37 +187,6 @@ export function CourseEditor() {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-white/50">Tag</label>
-            <select
-              value={weekday}
-              onChange={(e) => setWeekday(Number(e.target.value) as Weekday)}
-              className="w-full rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
-            >
-              {WEEKDAYS.map((w) => (
-                <option key={w.value} value={w.value}>
-                  {w.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-white/50">Ab Stunde</label>
-            <select
-              value={period}
-              onChange={(e) => setPeriod(Number(e.target.value))}
-              className="w-full rounded-xl border border-line bg-bg-card px-3 py-2 text-sm outline-none transition focus:border-accent/60"
-            >
-              {PERIODS.map((p) => (
-                <option key={p.period} value={p.period}>
-                  {p.period}. ({p.start})
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
