@@ -26,6 +26,7 @@ export default {
       boxShadow: {
         glow: '0 0 40px -8px rgba(168, 85, 247, 0.5)',
         'glow-lg': '0 0 60px -10px rgba(217, 70, 239, 0.45)',
+        'glow-amber': '0 0 32px -6px rgba(251, 191, 36, 0.35)',
       },
       keyframes: {
         'fade-in': {

@@ -1,15 +1,19 @@
+import { format, subMonths } from 'date-fns'
+import { de } from 'date-fns/locale'
 import { supabase } from './supabase'
 import type { NewRating, Rating, RatingSummary } from '../types'
+import { TIMETABLE } from '../config/timetable'
+import { COURSE_SUGGESTIONS } from '../config/classes'
 
 /** Schlüssel einer Bewertung (passend zu schedule.lessonKey). */
 function keyOf(r: Rating): string {
   return `${r.lesson_date}#${r.period}#${r.course_code ?? ''}`
 }
 
-/** Holt alle Bewertungen einer Klasse seit `sinceISO` (Default: letzte 35 Tage). */
+/** Holt alle Bewertungen einer Klasse seit `sinceISO` (Default: letztes Jahr). */
 export async function fetchRatings(className: string, sinceISO?: string): Promise<Rating[]> {
   const since =
-    sinceISO ?? new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString()
+    sinceISO ?? new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data, error } = await supabase
     .from('ratings')
@@ -85,4 +89,90 @@ function groupBy<T>(items: T[], keyFn: (item: T) => string): Map<string, T[]> {
     map.set(key, arr)
   }
   return map
+}
+
+// ── Lehrer-Statistik ─────────────────────────────────────────
+
+/** Fach → Lehrkraft-Kürzel, aus dem gemeinsamen Plan + Kursvorschlägen. */
+function buildSubjectTeacherMap(): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const day of Object.values(TIMETABLE)) {
+    for (const entry of day) {
+      if (entry.teacher) map.set(entry.subject, entry.teacher)
+    }
+  }
+  for (const s of COURSE_SUGGESTIONS) {
+    if (s.teacher) map.set(s.name, s.teacher)
+  }
+  return map
+}
+
+const SUBJECT_TEACHER_MAP = buildSubjectTeacherMap()
+
+export interface TeacherStat extends RatingSummary {
+  teacher: string
+  /** Alle Fächer, die diese Lehrkraft unterrichtet (aus den Bewertungen). */
+  subjects: string[]
+}
+
+/** Leaderboard: pro Lehrkraft aggregiert (All-time), sortiert nach Schnitt. */
+export function statsByTeacher(ratings: Rating[]): TeacherStat[] {
+  const teacherData = new Map<string, { ratings: Rating[]; subjects: Set<string> }>()
+
+  for (const r of ratings) {
+    const teacher = SUBJECT_TEACHER_MAP.get(r.subject)
+    if (!teacher) continue
+
+    const entry = teacherData.get(teacher) ?? { ratings: [], subjects: new Set() }
+    entry.ratings.push(r)
+    entry.subjects.add(r.subject)
+    teacherData.set(teacher, entry)
+  }
+
+  const out: TeacherStat[] = []
+  for (const [teacher, { ratings: arr, subjects }] of teacherData) {
+    out.push({
+      teacher,
+      subjects: [...subjects].sort((a, b) => a.localeCompare(b, 'de')),
+      ...summarize(arr),
+    })
+  }
+  return out.sort((a, b) => b.average - a.average || b.count - a.count)
+}
+
+// ── Trend-Daten ──────────────────────────────────────────────
+
+export interface TrendPoint {
+  /** Anzeigelabel, z. B. "Jan 26" oder "2025". */
+  label: string
+  /** Sortierschlüssel, z. B. "2026-01" oder "2025". */
+  period: string
+  average: number
+  count: number
+}
+
+/** Monatstrend: letzte `months` Monate (inklusive laufendem Monat). */
+export function trendByMonth(ratings: Rating[], months = 12): TrendPoint[] {
+  const now = new Date()
+  const points: TrendPoint[] = []
+  for (let i = months - 1; i >= 0; i--) {
+    const d = subMonths(now, i)
+    const period = format(d, 'yyyy-MM')
+    const label = format(d, 'MMM yy', { locale: de })
+    const subset = ratings.filter((r) => r.lesson_date.slice(0, 7) === period)
+    const { count, average } = summarize(subset)
+    points.push({ label, period, average, count })
+  }
+  return points
+}
+
+/** Jahrestrend: alle Kalenderjahre, in denen es Bewertungen gibt. */
+export function trendByYear(ratings: Rating[]): TrendPoint[] {
+  const years = new Set(ratings.map((r) => r.lesson_date.slice(0, 4)))
+  if (years.size === 0) return []
+  return [...years].sort().map((year) => {
+    const subset = ratings.filter((r) => r.lesson_date.startsWith(year))
+    const { count, average } = summarize(subset)
+    return { label: year, period: year, average, count }
+  })
 }

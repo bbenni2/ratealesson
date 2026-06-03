@@ -52,14 +52,17 @@ export function LessonCard({ lesson, summary, ratable, rated, onClick, showDate 
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-1">
+      <div className="flex shrink-0 flex-col items-end gap-0.5">
         {count > 0 ? (
           <>
-            <span className="font-display text-lg font-bold leading-none text-white">
-              {formatAverage(avg, count)}
-            </span>
-            <StarDisplay value={avg} size={11} />
-            <span className="text-[10px] text-white/40">{count} Bew.</span>
+            <div className="flex items-end gap-0.5 leading-none">
+              <span className="font-display text-2xl font-bold tabular-nums text-amber">
+                {formatAverage(avg, count)}
+              </span>
+              <span className="mb-0.5 text-[10px] font-semibold text-white/25">/5</span>
+            </div>
+            <StarDisplay value={avg} size={10} />
+            <span className="text-[10px] text-white/35">{count} Bew.</span>
           </>
         ) : (
           <span className="chip border border-line text-white/40">
