@@ -85,7 +85,7 @@ export function CourseEditor() {
       <div className="card space-y-4 p-4">
         {/* 1) Fach antippen */}
         <div>
-          <p className="mb-2 text-xs font-medium text-white/50">1. Welcher Kurs?</p>
+          <p className="mb-2 text-xs font-medium text-white/50">1. Welches Wahlfach?</p>
           <div className="flex flex-wrap gap-2">
             {COURSE_SUGGESTIONS.map((s) => (
               <button
@@ -191,7 +191,7 @@ export function CourseEditor() {
         </div>
 
         <button onClick={add} disabled={!name.trim()} className="btn-primary w-full">
-          + Kurs hinzufügen
+          + Wahlfach hinzufügen
         </button>
       </div>
     </div>

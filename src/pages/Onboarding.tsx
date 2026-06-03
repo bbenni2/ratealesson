@@ -18,8 +18,8 @@ const SLIDES = [
   },
   {
     emoji: '🎓',
-    title: 'Deine Kurse & dein Plan',
-    text: 'Trag deine eigenen Kurse ein (Sprachen, Wahlpflicht …). Du bewertest nur deine Stunden, siehst aber alle Bewertungen.',
+    title: 'Deine Wahlfächer',
+    text: 'Trag deine Wahlfächer ein (Sprachen, Religion/Ethik …). Du bewertest nur deine Stunden, siehst aber alle Bewertungen.',
   },
 ]
 
@@ -114,10 +114,10 @@ export function Onboarding() {
       {view === 'courses' && (
         <div className="mt-8 space-y-4 animate-fade-in">
           <div>
-            <h2 className="font-display text-lg font-semibold">Deine Kurse</h2>
+            <h2 className="font-display text-lg font-semibold">Deine Wahlfächer</h2>
             <p className="text-sm text-white/50">
-              Trag deine Sprach- & Wahlpflichtkurse ein (Italienisch, Latein, Spanisch,
-              Religion/Ethik …). Doppelstunden = „2 Std". Hast du keine? Einfach überspringen.
+              Trag deine Wahlfächer ein: Sprachen (Ital./Lat./Span.), Religion, Ethik …
+              Doppelstunden = „2 Std". Keine Wahlfächer? Einfach überspringen.
             </p>
           </div>
 

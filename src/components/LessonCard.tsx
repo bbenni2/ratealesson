@@ -32,6 +32,11 @@ export function LessonCard({ lesson, summary, ratable, rated, onClick, showDate 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate font-display font-semibold text-white">{lesson.subject}</p>
+          {lesson.isCourse && (
+            <span className="chip shrink-0 border border-accent/30 bg-accent/10 text-accent-soft">
+              Wahlfach
+            </span>
+          )}
           {rated && (
             <span className="chip shrink-0 bg-lime/15 text-lime">bewertet</span>
           )}

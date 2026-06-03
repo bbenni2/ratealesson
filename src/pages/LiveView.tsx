@@ -10,9 +10,10 @@ import { useNow } from '../hooks/useNow'
 import { useRatings } from '../hooks/useRatings'
 import { useStudentConfig } from '../hooks/useStudentConfig'
 import { summaryByLesson } from '../lib/ratings'
-import { getCurrentState, isRatable, lessonKey } from '../lib/schedule'
+import { getCurrentState, isRatable, lessonKey, toDateKey } from '../lib/schedule'
 import { hasRated } from '../lib/localRatings'
 import { formatTime } from '../lib/format'
+import { eventsForDate, eventTypeLabel, type SchoolEvent } from '../config/events'
 import type { LessonInstance } from '../types'
 
 export function LiveView() {
@@ -26,6 +27,8 @@ export function LiveView() {
     [now, config.courses],
   )
   const summaries = useMemo(() => summaryByLesson(ratings), [ratings])
+  const todayEvents = useMemo(() => eventsForDate(toDateKey(now)), [now])
+  const isFreeDay = todayEvents.some((e) => e.noLessons)
 
   // Restliche Stunden (ohne die aktuelle), für die Tagesliste.
   const rest = today.filter((l) => l.period !== current?.period)
@@ -36,9 +39,20 @@ export function LiveView() {
 
       {error === 'not-configured' && <NotConfiguredBanner />}
 
+      {/* Events des heutigen Tages (Feiertag, Schulreise, …) */}
+      {todayEvents.length > 0 && (
+        <EventBanner events={todayEvents} />
+      )}
+
       {/* Aktuelle Stunde / Hero */}
       <section>
-        {current ? (
+        {isFreeDay ? (
+          <EmptyState
+            emoji={todayEvents[0]?.emoji ?? '🏖️'}
+            title={todayEvents[0]?.name ?? 'Schulfrei'}
+            hint={eventTypeLabel(todayEvents[0]?.type ?? 'feiertag') + ' – genieß den freien Tag!'}
+          />
+        ) : current ? (
           <CurrentLessonCard
             lesson={current}
             summary={summaries.get(lessonKey(current))}
@@ -61,43 +75,71 @@ export function LiveView() {
         )}
       </section>
 
-      {/* Heutige Stunden */}
-      <section>
-        <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-white/50">
-            Heute
-          </h2>
-          {today.length > 0 && (
-            <span className="text-xs text-white/35">{today.length} Stunden</span>
-          )}
-        </div>
-
-        {loading && error !== 'not-configured' ? (
-          <ListSkeleton rows={5} />
-        ) : rest.length === 0 && !current ? (
-          <EmptyState emoji="📭" title="Keine weiteren Stunden" />
-        ) : (
-          <div className="space-y-2.5">
-            {rest.map((lesson) => {
-              const key = lessonKey(lesson)
-              return (
-                <LessonCard
-                  key={key}
-                  lesson={lesson}
-                  summary={summaries.get(key)}
-                  ratable={isRatable(lesson, now)}
-                  rated={hasRated(key)}
-                  onClick={() => setSelected(lesson)}
-                />
-              )
-            })}
+      {/* Heutige Stunden (ausgeblendet an schulfreien Tagen) */}
+      {!isFreeDay && (
+        <section>
+          <div className="mb-2.5 flex items-center justify-between">
+            <h2 className="font-display text-sm font-bold uppercase tracking-wide text-white/50">
+              Heute
+            </h2>
+            {today.length > 0 && (
+              <span className="text-xs text-white/35">{today.length} Stunden</span>
+            )}
           </div>
-        )}
-      </section>
+
+          {loading && error !== 'not-configured' ? (
+            <ListSkeleton rows={5} />
+          ) : rest.length === 0 && !current ? (
+            <EmptyState emoji="📭" title="Keine weiteren Stunden" />
+          ) : (
+            <div className="space-y-2.5">
+              {rest.map((lesson) => {
+                const key = lessonKey(lesson)
+                return (
+                  <LessonCard
+                    key={key}
+                    lesson={lesson}
+                    summary={summaries.get(key)}
+                    ratable={isRatable(lesson, now)}
+                    rated={hasRated(key)}
+                    onClick={() => setSelected(lesson)}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
       {selected && (
         <RatingModal lesson={selected} onClose={() => setSelected(null)} />
       )}
+    </div>
+  )
+}
+
+/** Banner für Feiertage, Ferien, Schulreisen & Veranstaltungen. */
+function EventBanner({ events }: { events: SchoolEvent[] }) {
+  return (
+    <div className="space-y-2">
+      {events.map((ev) => (
+        <div
+          key={ev.date + ev.name}
+          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+            ev.type === 'feiertag' || ev.type === 'ferien'
+              ? 'border-amber/25 bg-amber/10 text-amber'
+              : ev.type === 'schulreise'
+                ? 'border-lime/25 bg-lime/10 text-lime'
+                : 'border-accent/25 bg-accent/10 text-accent-soft'
+          }`}
+        >
+          <span className="text-2xl">{ev.emoji}</span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display font-bold leading-tight">{ev.name}</p>
+            <p className="text-xs opacity-70">{eventTypeLabel(ev.type)}</p>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

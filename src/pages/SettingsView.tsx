@@ -14,7 +14,7 @@ export function SettingsView() {
       <header className="flex items-center justify-between pt-safe">
         <div>
           <h1 className="font-display text-2xl font-bold">Einstellungen ⚙️</h1>
-          <p className="text-sm text-white/40">Klasse & deine Kurse verwalten.</p>
+          <p className="text-sm text-white/40">Klasse & deine Wahlfächer verwalten.</p>
         </div>
         <button onClick={() => navigate('/')} className="btn-ghost">
           Fertig
@@ -46,7 +46,7 @@ export function SettingsView() {
       {/* Kurse */}
       <section className="space-y-2.5">
         <h2 className="font-display text-sm font-bold uppercase tracking-wide text-white/50">
-          Deine Kurse
+          Deine Wahlfächer
         </h2>
         <CourseEditor />
       </section>

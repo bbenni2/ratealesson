@@ -1,6 +1,7 @@
 import { addDays, differenceInCalendarDays, format, parse } from 'date-fns'
 import { PERIOD_BY_NUMBER, PERIODS } from '../config/periods'
 import { TIMETABLE } from '../config/timetable'
+import { isSchoolFreeDay } from '../config/events'
 import { courseCodeFrom } from './courseCode'
 import type { LessonInstance, StudentCourse, Weekday } from '../types'
 
@@ -33,6 +34,10 @@ function endPeriodNumber(period: number, length: number): number {
 export function lessonsForDate(date: Date, courses: StudentCourse[]): LessonInstance[] {
   const weekday = date.getDay() as Weekday
   const dateKey = toDateKey(date)
+
+  // Kein Unterricht an Feiertagen, Ferien & schulautonomen Tagen
+  if (isSchoolFreeDay(dateKey)) return []
+
   const out: LessonInstance[] = []
 
   // 1) Gemeinsame Stunden der ganzen Klasse
