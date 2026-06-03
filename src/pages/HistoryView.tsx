@@ -8,6 +8,7 @@ import { isRatable, lessonKey, pastLessons, toDateKey } from '../lib/schedule'
 import { hasRated } from '../lib/localRatings'
 import { formatDayLabel } from '../lib/format'
 import { eventsForDate, eventTypeLabel, type SchoolEvent } from '../config/events'
+import { useNavigate } from 'react-router-dom'
 import { LessonCard } from '../components/LessonCard'
 import { RatingModal } from '../components/RatingModal'
 import { EmptyState } from '../components/EmptyState'
@@ -20,6 +21,7 @@ const HISTORY_DAYS = 30
 
 export function HistoryView() {
   const now = useNow(60000)
+  const navigate = useNavigate()
   const { ratings, loading, error } = useRatings()
   const { config } = useStudentConfig()
   const [selected, setSelected] = useState<LessonInstance | null>(null)
@@ -90,6 +92,23 @@ export function HistoryView() {
       </header>
 
       {error === 'not-configured' && <NotConfiguredBanner />}
+
+      {/* Hinweis: Noch keine Wahlfächer konfiguriert */}
+      {config.courses.length === 0 && (
+        <button
+          onClick={() => navigate('/einstellungen')}
+          className="flex w-full items-center gap-3 rounded-2xl border border-accent/25 bg-accent/8 px-4 py-3 text-left transition hover:border-accent/50"
+        >
+          <span className="text-xl">🎓</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-accent-soft">Keine Wahlfächer eingetragen</p>
+            <p className="text-xs text-white/50">
+              Sprachen, Religion, Ethik … hier eintragen → tippe zum Öffnen
+            </p>
+          </div>
+          <span className="text-white/40">›</span>
+        </button>
+      )}
 
       {/* Filter */}
       <div className="flex flex-wrap items-center gap-2">

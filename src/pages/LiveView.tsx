@@ -14,10 +14,12 @@ import { getCurrentState, isRatable, lessonKey, toDateKey } from '../lib/schedul
 import { hasRated } from '../lib/localRatings'
 import { formatTime } from '../lib/format'
 import { eventsForDate, eventTypeLabel, type SchoolEvent } from '../config/events'
+import { useNavigate } from 'react-router-dom'
 import type { LessonInstance } from '../types'
 
 export function LiveView() {
   const now = useNow(1000)
+  const navigate = useNavigate()
   const { ratings, loading, error } = useRatings()
   const { config } = useStudentConfig()
   const [selected, setSelected] = useState<LessonInstance | null>(null)
@@ -38,6 +40,23 @@ export function LiveView() {
       <Header now={now} />
 
       {error === 'not-configured' && <NotConfiguredBanner />}
+
+      {/* Hinweis: Keine Wahlfächer konfiguriert */}
+      {config.courses.length === 0 && !isFreeDay && (
+        <button
+          onClick={() => navigate('/einstellungen')}
+          className="flex w-full items-center gap-3 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-3 text-left transition hover:border-accent/50"
+        >
+          <span className="text-xl">🎓</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-accent-soft">Wahlfächer fehlen noch</p>
+            <p className="text-xs text-white/50">
+              Ital. · Lat. · Span. · Religion · Ethik → Einstellungen
+            </p>
+          </div>
+          <span className="text-white/40">›</span>
+        </button>
+      )}
 
       {/* Events des heutigen Tages (Feiertag, Schulreise, …) */}
       {todayEvents.length > 0 && (
