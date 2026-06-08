@@ -206,7 +206,7 @@ function CommentsSection({
         </div>
       </div>
 
-      {withComment.length > 0 && (
+      {withComment.length > 0 ? (
         <div className="mt-4 space-y-2.5">
           {withComment.map((r) => (
             <div key={r.id} className="rounded-xl border border-line bg-bg-card p-3">
@@ -219,6 +219,10 @@ function CommentsSection({
             </div>
           ))}
         </div>
+      ) : (
+        <p className="mt-3 text-center text-xs text-white/30">
+          Noch keine Kommentare – beim Bewerten optional eintragen.
+        </p>
       )}
     </div>
   )
