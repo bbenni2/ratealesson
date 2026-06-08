@@ -119,7 +119,8 @@ const FERIEN_2025_26: SchoolEvent[] = [
   ...ferien('2025-12-24', '2026-01-05', 'ferien', 'Weihnachtsferien', '🎄'),
   ...ferien('2026-02-02', '2026-02-07', 'ferien', 'Semesterferien',   '⛷️'),
   ...ferien('2026-04-02', '2026-04-11', 'ferien', 'Osterferien',      '🐣'),
-  ...ferien('2026-05-26', '2026-05-29', 'ferien', 'Pfingstferien',    '🌼'),
+  // Pfingstferien gibt es in Österreich (OÖ) nicht – nur der Pfingstmontag
+  // ist ein gesetzlicher Feiertag und wird automatisch über austrianHolidays() erfasst.
   ...ferien('2026-07-04', '2026-09-06', 'ferien', 'Sommerferien',     '☀️'),
 ]
 

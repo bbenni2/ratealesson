@@ -23,23 +23,31 @@ alter table public.ratings
 alter table public.ratings
   add column if not exists course_code text;
 
--- 3) Halbe Sterne erlauben: stars wird zu numeric (1.0 … 5.0 in 0.5-Schritten).
+-- 3) Insert-Policy ZUERST droppen – PostgreSQL erlaubt keine
+--    Typänderung an einer Spalte, auf die eine Policy verweist.
+drop policy if exists "ratings_insert_all" on public.ratings;
+
+-- 4) Halbe Sterne erlauben: stars wird zu numeric (1.0 … 5.0 in 0.5-Schritten).
+--    Der USING-Cast ist nötig, um bestehende smallint-Werte zu konvertieren.
 alter table public.ratings
   alter column stars type numeric(2, 1) using stars::numeric;
 
+-- 5) Alte Constraint entfernen und neue (halbe Sterne) hinzufügen.
 alter table public.ratings
   drop constraint if exists ratings_stars_check;
+
+alter table public.ratings
+  drop constraint if exists ratings_stars_half_check;
 
 alter table public.ratings
   add constraint ratings_stars_half_check
   check (stars >= 1 and stars <= 5 and (stars * 2) = floor(stars * 2));
 
--- 4) Index für die häufige Abfrage (Klasse + Kurs + Stunde).
+-- 6) Index für die häufige Abfrage (Klasse + Kurs + Stunde).
 create index if not exists ratings_course_idx
   on public.ratings (class_code, course_code, lesson_date, period);
 
--- 5) Insert-Policy aktualisieren (halbe Sterne zulassen).
-drop policy if exists "ratings_insert_all" on public.ratings;
+-- 7) Insert-Policy neu anlegen (jetzt mit halben Sternen + Kurs-Code).
 create policy "ratings_insert_all"
   on public.ratings for insert
   to anon, authenticated

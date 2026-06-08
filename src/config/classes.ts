@@ -14,11 +14,18 @@ export const DEFAULT_CLASS = '7B'
 // Erscheinen als Chips im Wahlfach-Editor. Lehrer-Kürzel fixiert
 // → alle tragen denselben Namen → konsistente Ratings.
 export const COURSE_SUGGESTIONS: { name: string; teacher?: string }[] = [
+  // Sprachen
   { name: 'Italienisch', teacher: 'GS' },
   { name: 'Latein', teacher: 'FS' },
   { name: 'Spanisch', teacher: 'MK' },
+  // Religion / Ethik
   { name: 'Religion', teacher: 'DIR' },
   { name: 'Ethik', teacher: 'MS' },
+  // Freitag-Gruppen: entweder Musik ODER Zeichnen (getrennte Klassen-Hälften)
+  { name: 'Musik', teacher: 'MA' },
+  { name: 'Zeichnen', teacher: 'WR' },
+  // Sport (Montag 9. Stunde, nach der Sprachstunde)
+  { name: 'Sport' },
 ]
 
 // ── Lehrkräfte (Kürzel → Vollständiger Name) ────────────────

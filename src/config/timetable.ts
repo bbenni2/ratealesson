@@ -31,7 +31,9 @@ export const TIMETABLE: Record<Weekday, TimetableEntry[]> = {
     { period: 5, subject: 'Mathematik', teacher: 'KE', room: 'R7B', emoji: '🔢' },
     { period: 6, subject: 'Physik', teacher: 'KP', room: 'PHS', emoji: '⚛️' },
     { period: 7, subject: 'Chemie', teacher: 'BE', room: 'CHS', emoji: '🧪' },
-    // 3.Std Sprachen · 4.Std Religion/Ethik · 8.Std Italienisch · 9.Std Sport-WP → persönlich
+    { period: 9, subject: 'Sport', room: 'TH', emoji: '⚽' },
+    // 3.Std Sprachen · 4.Std Religion/Ethik · 8.Std Italienisch → persönlich
+    // 👉 Sport-Lehrerkürzel noch ergänzen, z. B.:  teacher: 'XX'
   ],
 
   // ── Dienstag ──────────────────────────────────────────────
@@ -65,12 +67,10 @@ export const TIMETABLE: Record<Weekday, TimetableEntry[]> = {
 
   // ── Freitag ───────────────────────────────────────────────
   5: [
-    { period: 1, subject: 'Psychologie & Philosophie', teacher: 'ES', room: 'R7B', emoji: '🧠' },
-    { period: 3, subject: 'Kunst & Gestaltung', teacher: 'WR', room: 'KG2', emoji: '🎨' },
-    { period: 4, subject: 'Musik', teacher: 'MA', room: 'MU1', emoji: '🎵' },
-    { period: 5, subject: 'Chemie', teacher: 'BE', room: 'CHS', emoji: '🧪' },
+    { period: 1, subject: 'Chemie', teacher: 'BE', room: 'CHS', emoji: '🧪' },
+    { period: 5, subject: 'Psychologie & Philosophie', teacher: 'ES', room: 'R7B', emoji: '🧠' },
     { period: 6, subject: 'Deutsch', teacher: 'BU', room: 'R7B', emoji: '📚' },
-    // 2.Std Sprachen → persönlich
+    // 2.Std Sprachen · 3.–4.Std Musik ODER Zeichnen (getrennte Gruppen) → persönlich
   ],
 
   // Samstag
