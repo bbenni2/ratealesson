@@ -31,9 +31,8 @@ export const TIMETABLE: Record<Weekday, TimetableEntry[]> = {
     { period: 5, subject: 'Mathematik', teacher: 'KE', room: 'R7B', emoji: '🔢' },
     { period: 6, subject: 'Physik', teacher: 'KP', room: 'PHS', emoji: '⚛️' },
     { period: 7, subject: 'Chemie', teacher: 'BE', room: 'CHS', emoji: '🧪' },
-    { period: 9, subject: 'Sport', room: 'TH', emoji: '⚽' },
     // 3.Std Sprachen · 4.Std Religion/Ethik · 8.Std Italienisch → persönlich
-    // 👉 Sport-Lehrerkürzel noch ergänzen, z. B.:  teacher: 'XX'
+    // 9.–10.Std Sport/Turnen (Doppel, getrennte Gruppen NP/GR) → persönlich
   ],
 
   // ── Dienstag ──────────────────────────────────────────────

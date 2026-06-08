@@ -12,6 +12,7 @@ export const DEFAULT_CLASS = '7B'
 
 // ── Wahlfach-Vorschläge ─────────────────────────────────────
 // Erscheinen als Chips im benutzerdefinierten Kurs-Editor.
+// (Alles was in QUICK_SETUP_GROUPS steht, wird hier ausgeblendet.)
 export const COURSE_SUGGESTIONS: { name: string; teacher?: string }[] = [
   { name: 'Italienisch', teacher: 'GS' },
   { name: 'Latein', teacher: 'FS' },
@@ -20,7 +21,8 @@ export const COURSE_SUGGESTIONS: { name: string; teacher?: string }[] = [
   { name: 'Ethik', teacher: 'MS' },
   { name: 'Musik', teacher: 'MA' },
   { name: 'Zeichnen', teacher: 'WR' },
-  { name: 'Sport' },
+  { name: 'Sport', teacher: 'GR' },
+  { name: 'Turnen', teacher: 'NP' },
 ]
 
 // ── Quick-Setup Gruppen ──────────────────────────────────────
@@ -134,6 +136,26 @@ export const QUICK_SETUP_GROUPS: QuickGroup[] = [
         name: 'Zeichnen',
         teacher: 'WR',
         slots: [{ weekday: 5, period: 3, length: 2 }],
+      },
+      { label: 'keines' },
+    ],
+  },
+  {
+    id: 'sport',
+    icon: '⚽',
+    question: 'Sport oder Turnen? (Mo 9./10. Doppel)',
+    options: [
+      {
+        label: 'Sport · GR',
+        name: 'Sport',
+        teacher: 'GR',
+        slots: [{ weekday: 1, period: 9, length: 2 }],
+      },
+      {
+        label: 'Turnen · NP',
+        name: 'Turnen',
+        teacher: 'NP',
+        slots: [{ weekday: 1, period: 9, length: 2 }],
       },
       { label: 'keines' },
     ],
