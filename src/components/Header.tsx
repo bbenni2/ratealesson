@@ -22,7 +22,12 @@ export function Header({ now }: { now: Date }) {
           ⭐
         </div>
         <div>
-          <h1 className="font-display text-lg font-bold leading-none">Rate a Lesson</h1>
+          <div className="flex items-center gap-1.5 leading-none">
+            <h1 className="font-display text-lg font-bold">Rate a Lesson</h1>
+            <span className="rounded-md border border-amber/40 bg-amber/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber">
+              Beta
+            </span>
+          </div>
           <p className="text-xs text-white/40">Klasse {config.className}</p>
         </div>
       </div>

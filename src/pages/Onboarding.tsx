@@ -32,8 +32,14 @@ export function Onboarding() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col px-4 pb-10 pt-safe">
       <div className="pt-8 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-glow text-3xl shadow-glow-lg">
-          ⭐
+        <div className="relative mx-auto inline-flex">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-glow text-3xl shadow-glow-lg">
+            ⭐
+          </div>
+          {/* Beta-Badge oben rechts am Icon */}
+          <span className="absolute -right-2 -top-2 rounded-md border border-amber/50 bg-bg-soft px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber shadow-sm">
+            Beta
+          </span>
         </div>
         <h1 className="mt-4 font-display text-2xl font-bold">Rate a Lesson</h1>
         <p className="mt-1 text-sm text-white/50">
@@ -41,6 +47,11 @@ export function Onboarding() {
             ? 'In 10 Sekunden erklärt 👇'
             : 'Kurz einrichten – alles bleibt anonym & nur auf diesem Gerät.'}
         </p>
+        {view === 'intro' && (
+          <p className="mt-3 text-[11px] text-white/25">
+            🚧 Beta-Version – Fehler & Feedback willkommen
+          </p>
+        )}
       </div>
 
       {/* ── Tutorial ── */}
