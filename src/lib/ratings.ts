@@ -47,6 +47,26 @@ export async function insertRating(rating: NewRating): Promise<Rating> {
   return { ...data, stars: Number(data.stars) } as Rating
 }
 
+/** Aktualisiert eine bestehende Bewertung (Sterne, Kommentar, Spitzname). */
+export async function updateRating(
+  id: string,
+  updates: { stars: number; comment: string | null; nickname: string | null },
+): Promise<Rating> {
+  const { data, error } = await supabase
+    .from('ratings')
+    .update({
+      stars: updates.stars,
+      comment: updates.comment?.trim() || null,
+      nickname: updates.nickname?.trim() || null,
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return { ...data, stars: Number(data.stars) } as Rating
+}
+
 // ── Aggregationen (rein im Client gerechnet) ─────────────────
 
 export function summarize(ratings: Rating[]): RatingSummary {

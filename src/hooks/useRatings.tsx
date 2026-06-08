@@ -18,6 +18,8 @@ interface RatingsContextValue {
   error: string | null
   /** Optimistisch eine Bewertung anhängen (vor/parallel zum Realtime-Event). */
   addLocal: (rating: Rating) => void
+  /** Bestehende Bewertung in-place ersetzen (nach einem Update). */
+  updateLocal: (rating: Rating) => void
   reload: () => void
 }
 
@@ -62,6 +64,10 @@ export function RatingsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const updateLocal = useCallback((rating: Rating) => {
+    setRatings((prev) => prev.map((r) => (r.id === rating.id ? rating : r)))
+  }, [])
+
   useEffect(() => {
     load()
   }, [load])
@@ -95,8 +101,8 @@ export function RatingsProvider({ children }: { children: ReactNode }) {
   }, [className])
 
   const value = useMemo<RatingsContextValue>(
-    () => ({ ratings, loading, error, addLocal, reload: load }),
-    [ratings, loading, error, addLocal, load],
+    () => ({ ratings, loading, error, addLocal, updateLocal, reload: load }),
+    [ratings, loading, error, addLocal, updateLocal, load],
   )
 
   return <RatingsContext.Provider value={value}>{children}</RatingsContext.Provider>

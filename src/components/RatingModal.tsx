@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { LessonInstance, Rating } from '../types'
-import { insertRating, ratingsByLesson, summarize } from '../lib/ratings'
+import { insertRating, ratingsByLesson, summarize, updateRating } from '../lib/ratings'
 import { isRatable, lessonKey } from '../lib/schedule'
-import { hasRated, markRated } from '../lib/localRatings'
+import { getRatingId, hasRated, markRated } from '../lib/localRatings'
 import { useNow } from '../hooks/useNow'
 import { useRatings } from '../hooks/useRatings'
 import { useStudentConfig } from '../hooks/useStudentConfig'
@@ -21,26 +21,51 @@ interface Props {
 
 export function RatingModal({ lesson, onClose }: Props) {
   const now = useNow(60000)
-  const { ratings, addLocal } = useRatings()
+  const { ratings, addLocal, updateLocal } = useRatings()
   const { config } = useStudentConfig()
   const { toast } = useToast()
-
-  const [stars, setStars] = useState(0)
-  const [comment, setComment] = useState('')
-  const [nickname, setNickname] = useState(() => localStorage.getItem(NICK_KEY) ?? '')
-  const [submitting, setSubmitting] = useState(false)
 
   const key = lessonKey(lesson)
   const ratable = isRatable(lesson, now)
   const alreadyRated = hasRated(key)
-  const canRate = ratable && !alreadyRated
+  const ratingId = getRatingId(key)
 
+  /** Innerhalb des Zeitfensters + bereits bewertet + ID bekannt → bearbeitbar */
+  const canEdit = ratable && alreadyRated && ratingId !== null
+  /** Noch nicht bewertet + Zeitfenster offen → neu bewertbar */
+  const canRate = ratable && !alreadyRated
+  /** Formular anzeigen */
+  const showForm = canRate || canEdit
+
+  // ── Bestehende Bewertung zum Vorausfüllen ────────────────────
   const lessonRatings = useMemo(
     () => ratingsByLesson(ratings).get(key) ?? [],
     [ratings, key],
   )
   const summary = useMemo(() => summarize(lessonRatings), [lessonRatings])
+  const existingRating = useMemo(
+    () => (ratingId ? (lessonRatings.find((r) => r.id === ratingId) ?? null) : null),
+    [ratingId, lessonRatings],
+  )
 
+  // ── Formular-State ────────────────────────────────────────────
+  const [stars, setStars] = useState(0)
+  const [comment, setComment] = useState('')
+  const [nickname, setNickname] = useState(() => localStorage.getItem(NICK_KEY) ?? '')
+  const [submitting, setSubmitting] = useState(false)
+
+  // Vorausfüllen sobald die bestehende Bewertung geladen ist (einmalig).
+  const prefilledRef = useRef(false)
+  useEffect(() => {
+    if (canEdit && existingRating && !prefilledRef.current) {
+      prefilledRef.current = true
+      setStars(existingRating.stars)
+      setComment(existingRating.comment ?? '')
+      if (existingRating.nickname) setNickname(existingRating.nickname)
+    }
+  }, [canEdit, existingRating])
+
+  // ── Keyboard / scroll lock ────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
@@ -51,32 +76,54 @@ export function RatingModal({ lesson, onClose }: Props) {
     }
   }, [onClose])
 
+  // ── Submit ────────────────────────────────────────────────────
   async function submit() {
-    if (stars < 1) {
+    if (stars <= 0) {
       toast('Bitte wähl zuerst Sterne aus ⭐', 'info')
       return
     }
     setSubmitting(true)
-    try {
-      const saved = await insertRating({
-        class_code: config.className,
-        lesson_date: lesson.date,
-        period: lesson.period,
-        subject: lesson.subject,
-        course_code: lesson.courseCode,
-        stars,
-        comment: comment.trim() || null,
-        nickname: nickname.trim() || null,
-      })
-      markRated(key)
-      if (nickname.trim()) localStorage.setItem(NICK_KEY, nickname.trim())
-      addLocal(saved)
-      toast('Danke für deine Bewertung! 🙌', 'success')
-      onClose()
-    } catch (e) {
-      console.error(e)
-      toast('Hat nicht geklappt – probier es nochmal.', 'error')
-      setSubmitting(false)
+
+    if (canEdit && ratingId) {
+      // ── Bearbeiten ────────────────────────────────────────────
+      try {
+        const updated = await updateRating(ratingId, {
+          stars,
+          comment: comment.trim() || null,
+          nickname: nickname.trim() || null,
+        })
+        if (nickname.trim()) localStorage.setItem(NICK_KEY, nickname.trim())
+        updateLocal(updated)
+        toast('Bewertung aktualisiert! ✏️', 'success')
+        onClose()
+      } catch (e) {
+        console.error(e)
+        toast('Hat nicht geklappt – probier es nochmal.', 'error')
+        setSubmitting(false)
+      }
+    } else {
+      // ── Neu eintragen ─────────────────────────────────────────
+      try {
+        const saved = await insertRating({
+          class_code: config.className,
+          lesson_date: lesson.date,
+          period: lesson.period,
+          subject: lesson.subject,
+          course_code: lesson.courseCode,
+          stars,
+          comment: comment.trim() || null,
+          nickname: nickname.trim() || null,
+        })
+        markRated(key, saved.id)
+        if (nickname.trim()) localStorage.setItem(NICK_KEY, nickname.trim())
+        addLocal(saved)
+        toast('Danke für deine Bewertung! 🙌', 'success')
+        onClose()
+      } catch (e) {
+        console.error(e)
+        toast('Hat nicht geklappt – probier es nochmal.', 'error')
+        setSubmitting(false)
+      }
     }
   }
 
@@ -115,9 +162,16 @@ export function RatingModal({ lesson, onClose }: Props) {
         </div>
 
         {/* Eingabe-Bereich */}
-        {canRate ? (
+        {showForm ? (
           <>
-            <div className="mt-6">
+            {/* Bearbeiten-Hinweis */}
+            {canEdit && (
+              <div className="mt-5 rounded-xl border border-amber/30 bg-amber/10 px-3 py-2 text-center text-xs text-amber">
+                ✏️ Du hast diese Stunde bereits bewertet – hier kannst du sie ändern.
+              </div>
+            )}
+
+            <div className="mt-5">
               <StarInput value={stars} onChange={setStars} />
             </div>
 
@@ -154,7 +208,11 @@ export function RatingModal({ lesson, onClose }: Props) {
                 Abbrechen
               </button>
               <button onClick={submit} disabled={submitting} className="btn-primary flex-[2]">
-                {submitting ? 'Speichern…' : 'Bewertung absenden'}
+                {submitting
+                  ? 'Speichern…'
+                  : canEdit
+                    ? 'Bewertung aktualisieren'
+                    : 'Bewertung absenden'}
               </button>
             </div>
           </>
