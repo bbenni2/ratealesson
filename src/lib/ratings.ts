@@ -26,8 +26,11 @@ export async function fetchRatings(className: string, sinceISO?: string): Promis
   return (data ?? []).map((r) => ({ ...r, stars: Number(r.stars) })) as Rating[]
 }
 
-/** Speichert eine neue Bewertung. */
+/** Speichert eine neue Bewertung. Wenn eingeloggt wird user_id automatisch gesetzt. */
 export async function insertRating(rating: NewRating): Promise<Rating> {
+  const { data: sessionData } = await supabase.auth.getSession()
+  const userId = sessionData.session?.user.id ?? null
+
   const { data, error } = await supabase
     .from('ratings')
     .insert({
@@ -39,6 +42,7 @@ export async function insertRating(rating: NewRating): Promise<Rating> {
       stars: rating.stars,
       comment: rating.comment?.trim() || null,
       nickname: rating.nickname?.trim() || null,
+      user_id: userId,
     })
     .select()
     .single()

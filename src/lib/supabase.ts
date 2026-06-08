@@ -22,7 +22,7 @@ export const supabase = createClient(
   url ?? 'http://localhost:54321',
   anonKey ?? 'public-anon-key-placeholder',
   {
-    auth: { persistSession: false },
+    auth: { persistSession: true },
     realtime: { params: { eventsPerSecond: 5 } },
   },
 )

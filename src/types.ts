@@ -87,10 +87,12 @@ export interface Rating {
   subject: string
   /** Kurs-/Gruppen-Code; null bei gemeinsamen Stunden. */
   course_code: string | null
-  /** 1.0–5.0 in 0,5-Schritten. */
+  /** 0.5–5.0 in 0,5-Schritten. */
   stars: number
   comment: string | null
   nickname: string | null
+  /** Auth-User-ID; null bei anonymen Bewertungen. */
+  user_id: string | null
 }
 
 /** Eingabe beim Erstellen einer neuen Bewertung. */

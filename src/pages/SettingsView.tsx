@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { CLASSES } from '../config/classes'
 import { useStudentConfig } from '../hooks/useStudentConfig'
 import { useToast } from '../hooks/useToast'
+import { AccountSection } from '../components/AccountSection'
 import { CourseEditor } from '../components/CourseEditor'
 
 export function SettingsView() {
@@ -20,6 +21,14 @@ export function SettingsView() {
           Fertig
         </button>
       </header>
+
+      {/* Konto */}
+      <section className="space-y-2.5">
+        <h2 className="font-display text-sm font-bold uppercase tracking-wide text-white/50">
+          Konto
+        </h2>
+        <AccountSection />
+      </section>
 
       {/* Klasse */}
       <section className="space-y-2.5">

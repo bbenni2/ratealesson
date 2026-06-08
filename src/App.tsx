@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
 import { ToastViewport } from './components/ToastViewport'
+import { AuthProvider } from './hooks/useAuth'
 import { RatingsProvider } from './hooks/useRatings'
 import { ToastProvider } from './hooks/useToast'
 import { StudentConfigProvider, useStudentConfig } from './hooks/useStudentConfig'
@@ -35,12 +36,14 @@ function Shell() {
 export default function App() {
   return (
     <ToastProvider>
-      <StudentConfigProvider>
-        <RatingsProvider>
-          <Shell />
-          <ToastViewport />
-        </RatingsProvider>
-      </StudentConfigProvider>
+      <AuthProvider>
+        <StudentConfigProvider>
+          <RatingsProvider>
+            <Shell />
+            <ToastViewport />
+          </RatingsProvider>
+        </StudentConfigProvider>
+      </AuthProvider>
     </ToastProvider>
   )
 }
