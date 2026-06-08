@@ -12,6 +12,7 @@ import {
 import { teacherName } from '../config/classes'
 import { StarDisplay } from '../components/StarRating'
 import { TrendChart } from '../components/TrendChart'
+import { CommentsDrawer } from '../components/CommentsDrawer'
 import { EmptyState } from '../components/EmptyState'
 import { ListSkeleton } from '../components/Skeleton'
 import { NotConfiguredBanner } from '../components/NotConfiguredBanner'
@@ -33,6 +34,7 @@ export function StatsView() {
   const { ratings, loading, error } = useRatings()
   const [range, setRange] = useState<Range>(30)
   const [trendView, setTrendView] = useState<TrendView>('month')
+  const [commentsSubject, setCommentsSubject] = useState<string | null>(null)
 
   // Gefiltert nach Zeitraum (für Fächer-Leaderboard)
   const filtered = useMemo(() => {
@@ -44,6 +46,15 @@ export function StatsView() {
   const stats    = useMemo(() => statsBySubject(filtered), [filtered])
   const overall  = useMemo(() => summarize(filtered), [filtered])
   const maxCount = Math.max(1, ...stats.map((s) => s.count))
+
+  // Kommentar-Anzahl pro Fach (im gewählten Zeitraum)
+  const subjectCommentCount = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const r of filtered) {
+      if (r.comment) map.set(r.subject, (map.get(r.subject) ?? 0) + 1)
+    }
+    return map
+  }, [filtered])
 
   // Lehrer: immer All-time (alle ratings, nicht gefiltert)
   const teachers = useMemo(() => statsByTeacher(ratings), [ratings])
@@ -178,7 +189,18 @@ export function StatsView() {
                       style={{ width: `${(s.count / maxCount) * 100}%` }}
                     />
                   </div>
-                  <p className="mt-0.5 text-xs text-white/40">{s.count} Bewertungen</p>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <span className="text-xs text-white/40">{s.count} Bewertungen</span>
+                    {(subjectCommentCount.get(s.subject) ?? 0) > 0 && (
+                      <button
+                        onClick={() => setCommentsSubject(s.subject)}
+                        className="flex items-center gap-0.5 text-[11px] text-white/35 transition hover:text-accent-soft"
+                      >
+                        <span>💬</span>
+                        <span>{subjectCommentCount.get(s.subject)}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Score */}
@@ -252,6 +274,16 @@ export function StatsView() {
 
       {/* Abstand für Nav */}
       <div className="h-2" />
+
+      {/* Kommentar-Drawer */}
+      {commentsSubject && (
+        <CommentsDrawer
+          title={commentsSubject}
+          subtitle={RANGES.find((r) => r.value === range)?.label ?? 'Alle Zeiträume'}
+          ratings={filtered.filter((r) => r.subject === commentsSubject)}
+          onClose={() => setCommentsSubject(null)}
+        />
+      )}
     </div>
   )
 }

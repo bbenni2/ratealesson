@@ -3,13 +3,14 @@ import { Header } from '../components/Header'
 import { CurrentLessonCard } from '../components/CurrentLessonCard'
 import { LessonCard } from '../components/LessonCard'
 import { RatingModal } from '../components/RatingModal'
+import { CommentsDrawer } from '../components/CommentsDrawer'
 import { EmptyState } from '../components/EmptyState'
 import { ListSkeleton } from '../components/Skeleton'
 import { NotConfiguredBanner } from '../components/NotConfiguredBanner'
 import { useNow } from '../hooks/useNow'
 import { useRatings } from '../hooks/useRatings'
 import { useStudentConfig } from '../hooks/useStudentConfig'
-import { summaryByLesson } from '../lib/ratings'
+import { ratingsByLesson, summaryByLesson } from '../lib/ratings'
 import { getCurrentState, isRatable, lessonKey, toDateKey } from '../lib/schedule'
 import { hasRated } from '../lib/localRatings'
 import { formatTime } from '../lib/format'
@@ -23,14 +24,26 @@ export function LiveView() {
   const { ratings, loading, error } = useRatings()
   const { config } = useStudentConfig()
   const [selected, setSelected] = useState<LessonInstance | null>(null)
+  const [commentsLesson, setCommentsLesson] = useState<LessonInstance | null>(null)
 
   const { current, next, today } = useMemo(
     () => getCurrentState(now, config.courses),
     [now, config.courses],
   )
-  const summaries = useMemo(() => summaryByLesson(ratings), [ratings])
-  const todayEvents = useMemo(() => eventsForDate(toDateKey(now)), [now])
-  const isFreeDay = todayEvents.some((e) => e.noLessons)
+  const summaries      = useMemo(() => summaryByLesson(ratings), [ratings])
+  const allByLesson    = useMemo(() => ratingsByLesson(ratings),  [ratings])
+  const todayEvents    = useMemo(() => eventsForDate(toDateKey(now)), [now])
+  const isFreeDay      = todayEvents.some((e) => e.noLessons)
+
+  /** Anzahl Kommentare (mit Text) für eine konrete Stunde. */
+  const commentCountByLesson = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const [k, rs] of allByLesson) {
+      const n = rs.filter((r) => r.comment).length
+      if (n > 0) map.set(k, n)
+    }
+    return map
+  }, [allByLesson])
 
   // Restliche Stunden (ohne die aktuelle), für die Tagesliste.
   const rest = today.filter((l) => l.period !== current?.period)
@@ -59,11 +72,9 @@ export function LiveView() {
       )}
 
       {/* Events des heutigen Tages (Feiertag, Schulreise, …) */}
-      {todayEvents.length > 0 && (
-        <EventBanner events={todayEvents} />
-      )}
+      {todayEvents.length > 0 && <EventBanner events={todayEvents} />}
 
-      {/* Aktuelle Stunde / Hero */}
+      {/* ── Aktuelle Stunde / Hero ────────────────────── */}
       <section>
         {isFreeDay ? (
           <EmptyState
@@ -72,13 +83,19 @@ export function LiveView() {
             hint={eventTypeLabel(todayEvents[0]?.type ?? 'feiertag') + ' – genieß den freien Tag!'}
           />
         ) : current ? (
-          <CurrentLessonCard
-            lesson={current}
-            summary={summaries.get(lessonKey(current))}
-            now={now}
-            rated={hasRated(lessonKey(current))}
-            onRate={() => setSelected(current)}
-          />
+          <div>
+            <CurrentLessonCard
+              lesson={current}
+              summary={summaries.get(lessonKey(current))}
+              now={now}
+              rated={hasRated(lessonKey(current))}
+              onRate={() => setSelected(current)}
+            />
+            <CommentTrigger
+              count={commentCountByLesson.get(lessonKey(current)) ?? 0}
+              onClick={() => setCommentsLesson(current)}
+            />
+          </div>
         ) : next ? (
           <NextUp lesson={next} now={now} />
         ) : (
@@ -87,14 +104,14 @@ export function LiveView() {
             title={today.length ? 'Unterricht vorbei' : 'Heute kein Unterricht'}
             hint={
               today.length
-                ? 'Für heute war’s das – du kannst die Stunden unten trotzdem noch bewerten.'
+                ? "Für heute war’s das – du kannst die Stunden unten trotzdem noch bewerten."
                 : 'Genieß den freien Tag! Schau im Verlauf vorbei, um ältere Stunden zu bewerten.'
             }
           />
         )}
       </section>
 
-      {/* Heutige Stunden (ausgeblendet an schulfreien Tagen) */}
+      {/* ── Heutige Stunden ──────────────────────────── */}
       {!isFreeDay && (
         <section>
           <div className="mb-2.5 flex items-center justify-between">
@@ -114,15 +131,21 @@ export function LiveView() {
             <div className="space-y-2.5">
               {rest.map((lesson) => {
                 const key = lessonKey(lesson)
+                const cCount = commentCountByLesson.get(key) ?? 0
                 return (
-                  <LessonCard
-                    key={key}
-                    lesson={lesson}
-                    summary={summaries.get(key)}
-                    ratable={isRatable(lesson, now)}
-                    rated={hasRated(key)}
-                    onClick={() => setSelected(lesson)}
-                  />
+                  <div key={key}>
+                    <LessonCard
+                      lesson={lesson}
+                      summary={summaries.get(key)}
+                      ratable={isRatable(lesson, now)}
+                      rated={hasRated(key)}
+                      onClick={() => setSelected(lesson)}
+                    />
+                    <CommentTrigger
+                      count={cCount}
+                      onClick={() => setCommentsLesson(lesson)}
+                    />
+                  </div>
                 )
               })}
             </div>
@@ -130,10 +153,37 @@ export function LiveView() {
         </section>
       )}
 
+      {/* ── Modals & Drawer ───────────────────────────── */}
       {selected && (
         <RatingModal lesson={selected} onClose={() => setSelected(null)} />
       )}
+      {commentsLesson && (
+        <CommentsDrawer
+          title={commentsLesson.subject}
+          subtitle={`${commentsLesson.period}. Std. · ${formatTime(commentsLesson.startsAt)}–${formatTime(commentsLesson.endsAt)}`}
+          ratings={allByLesson.get(lessonKey(commentsLesson)) ?? []}
+          onClose={() => setCommentsLesson(null)}
+        />
+      )}
     </div>
+  )
+}
+
+// ── Kleine Hilfskomponenten ───────────────────────────────
+
+/** Zeigt „💬 N Kommentare" wenn es welche gibt. */
+function CommentTrigger({ count, onClick }: { count: number; onClick: () => void }) {
+  if (count === 0) return null
+  return (
+    <button
+      onClick={onClick}
+      className="mt-0.5 flex w-full items-center gap-1.5 px-3.5 py-1.5 text-[11px] text-white/40 transition hover:text-white/70 active:text-white/60"
+    >
+      <span>💬</span>
+      <span>
+        {count} Kommentar{count !== 1 ? 'e' : ''} ansehen
+      </span>
+    </button>
   )
 }
 
