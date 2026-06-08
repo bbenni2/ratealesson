@@ -51,7 +51,19 @@ function labelFor(v: number): string {
   return LABELS[Math.ceil(v)] ?? ''
 }
 
-/** Interaktiver Stern-Selektor mit halben Sternen (0,5-Schritte). */
+/** Berechnet 0,5 oder ganzen Wert aus der Pointer-X-Position innerhalb eines Sterns. */
+function starsAt(e: React.PointerEvent<HTMLDivElement>, starIndex: number): number {
+  const { left, width } = e.currentTarget.getBoundingClientRect()
+  return e.clientX - left < width / 2 ? starIndex - 0.5 : starIndex
+}
+
+/**
+ * Interaktiver Stern-Selektor mit halben Sternen (0,5-Schritte).
+ *
+ * Nutzt Pointer-Events (nicht Mouse-Events) damit es auf Touch-Geräten
+ * zuverlässig funktioniert: kein 300 ms-Delay, kein falsches Half-Star
+ * durch Touch-Ungenauigkeit.
+ */
 export function StarInput({ value, onChange }: InputProps) {
   const [hover, setHover] = useState(0)
   const active = hover || value
@@ -59,15 +71,35 @@ export function StarInput({ value, onChange }: InputProps) {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="flex gap-1.5" onMouseLeave={() => setHover(0)}>
+      {/* touch-none verhindert Scroll beim Tippen auf die Sterne */}
+      <div className="flex touch-none gap-1.5" onPointerLeave={() => setHover(0)}>
         {[1, 2, 3, 4, 5].map((i) => {
           const fill = Math.max(0, Math.min(1, active - (i - 1)))
           return (
-            <div key={i} className="relative" style={{ width: size, height: size }}>
-              {/* Anzeige */}
-              <StarIcon filled width={size} height={size} className="absolute inset-0 text-line" />
+            <div
+              key={i}
+              className="relative cursor-pointer select-none"
+              style={{ width: size, height: size }}
+              onPointerMove={(e) => setHover(starsAt(e, i))}
+              onPointerDown={(e) => {
+                // preventDefault verhindert den nachfolgenden synthetischen
+                // click-Event auf Touch – so wird onChange nur einmal aufgerufen.
+                e.preventDefault()
+                onChange(starsAt(e, i))
+              }}
+              role="button"
+              aria-label={`${i} oder ${i - 0.5} Sterne`}
+            >
+              {/* Leerer Stern (Hintergrund) */}
+              <StarIcon
+                filled
+                width={size}
+                height={size}
+                className="pointer-events-none absolute inset-0 text-line"
+              />
+              {/* Gefüllter Anteil (Clip-Trick) */}
               <span
-                className="absolute inset-0 overflow-hidden"
+                className="pointer-events-none absolute inset-0 overflow-hidden"
                 style={{ width: `${fill * 100}%` }}
               >
                 <StarIcon
@@ -77,21 +109,6 @@ export function StarInput({ value, onChange }: InputProps) {
                   className="text-amber drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]"
                 />
               </span>
-              {/* zwei Klick-Hälften: links = .5, rechts = ganze */}
-              <button
-                type="button"
-                aria-label={`${i - 0.5} Sterne`}
-                onMouseEnter={() => setHover(i - 0.5)}
-                onClick={() => onChange(i - 0.5)}
-                className="absolute inset-y-0 left-0 w-1/2"
-              />
-              <button
-                type="button"
-                aria-label={`${i} Sterne`}
-                onMouseEnter={() => setHover(i)}
-                onClick={() => onChange(i)}
-                className="absolute inset-y-0 right-0 w-1/2"
-              />
             </div>
           )
         })}

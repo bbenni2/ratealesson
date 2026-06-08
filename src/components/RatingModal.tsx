@@ -30,12 +30,14 @@ export function RatingModal({ lesson, onClose }: Props) {
   const alreadyRated = hasRated(key)
   const ratingId = getRatingId(key)
 
-  /** Innerhalb des Zeitfensters + bereits bewertet + ID bekannt → bearbeitbar */
+  /** Zeitfenster offen + bereits bewertet + ID gespeichert → UPDATE bestehende Bewertung */
   const canEdit = ratable && alreadyRated && ratingId !== null
-  /** Noch nicht bewertet + Zeitfenster offen → neu bewertbar */
+  /** Zeitfenster offen + bereits bewertet + KEINE ID (Alt-Eintrag) → neue INSERT erlauben */
+  const canReRate = ratable && alreadyRated && ratingId === null
+  /** Zeitfenster offen + noch nie bewertet */
   const canRate = ratable && !alreadyRated
   /** Formular anzeigen */
-  const showForm = canRate || canEdit
+  const showForm = canEdit || canReRate || canRate
 
   // ── Bestehende Bewertung zum Vorausfüllen ────────────────────
   const lessonRatings = useMemo(
@@ -164,10 +166,12 @@ export function RatingModal({ lesson, onClose }: Props) {
         {/* Eingabe-Bereich */}
         {showForm ? (
           <>
-            {/* Bearbeiten-Hinweis */}
-            {canEdit && (
+            {/* Bearbeiten / Nochmal-bewerten Hinweis */}
+            {(canEdit || canReRate) && (
               <div className="mt-5 rounded-xl border border-amber/30 bg-amber/10 px-3 py-2 text-center text-xs text-amber">
-                ✏️ Du hast diese Stunde bereits bewertet – hier kannst du sie ändern.
+                {canEdit
+                  ? '✏️ Du hast diese Stunde bereits bewertet – hier kannst du sie ändern.'
+                  : '↩️ Du hast bereits bewertet – hier kannst du eine neue Bewertung hinterlassen.'}
               </div>
             )}
 
@@ -212,7 +216,9 @@ export function RatingModal({ lesson, onClose }: Props) {
                   ? 'Speichern…'
                   : canEdit
                     ? 'Bewertung aktualisieren'
-                    : 'Bewertung absenden'}
+                    : canReRate
+                      ? 'Nochmal bewerten'
+                      : 'Bewertung absenden'}
               </button>
             </div>
           </>

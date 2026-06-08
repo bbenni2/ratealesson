@@ -11,22 +11,139 @@ export const CLASSES = ['7B'] as const
 export const DEFAULT_CLASS = '7B'
 
 // ── Wahlfach-Vorschläge ─────────────────────────────────────
-// Erscheinen als Chips im Wahlfach-Editor. Lehrer-Kürzel fixiert
-// → alle tragen denselben Namen → konsistente Ratings.
+// Erscheinen als Chips im benutzerdefinierten Kurs-Editor.
 export const COURSE_SUGGESTIONS: { name: string; teacher?: string }[] = [
-  // Sprachen
   { name: 'Italienisch', teacher: 'GS' },
   { name: 'Latein', teacher: 'FS' },
   { name: 'Spanisch', teacher: 'MK' },
-  // Religion / Ethik
   { name: 'Religion', teacher: 'DIR' },
   { name: 'Ethik', teacher: 'MS' },
-  // Freitag-Gruppen: entweder Musik ODER Zeichnen (getrennte Klassen-Hälften)
   { name: 'Musik', teacher: 'MA' },
   { name: 'Zeichnen', teacher: 'WR' },
-  // Sport (Montag 9. Stunde, nach der Sprachstunde)
   { name: 'Sport' },
 ]
+
+// ── Quick-Setup Gruppen ──────────────────────────────────────
+// Bekannte Teilungsgruppen mit fixen Slots – ermöglicht Setup mit
+// wenigen Taps. Slots sind aus dem Untis-Plan der 7B abgeleitet.
+// ⚠️  Stunden-Nummern bitte mit aktuellem Untis-Plan abgleichen!
+
+export interface QuickSlot {
+  weekday: 1 | 2 | 3 | 4 | 5
+  period: number
+  length: 1 | 2
+}
+
+export interface QuickOption {
+  label: string
+  /** undefined = „keine/nein"-Option – fügt keine Kurse hinzu. */
+  name?: string
+  teacher?: string
+  slots?: QuickSlot[]
+}
+
+export interface QuickGroup {
+  id: string
+  icon: string
+  question: string
+  /** Letztes Element sollte immer die „keine"-Option sein. */
+  options: QuickOption[]
+}
+
+export const QUICK_SETUP_GROUPS: QuickGroup[] = [
+  {
+    id: 'language',
+    icon: '🌍',
+    question: 'Welche Sprache hast du?',
+    options: [
+      {
+        label: 'Italienisch',
+        name: 'Italienisch',
+        teacher: 'GS',
+        // Ital hat mehr Stunden als Lat/Span (5/Woche)
+        slots: [
+          { weekday: 1, period: 3, length: 1 },
+          { weekday: 1, period: 8, length: 1 },
+          { weekday: 2, period: 5, length: 1 },
+          { weekday: 3, period: 2, length: 1 },
+          { weekday: 5, period: 2, length: 1 },
+        ],
+      },
+      {
+        label: 'Latein',
+        name: 'Latein',
+        teacher: 'FS',
+        slots: [
+          { weekday: 1, period: 3, length: 1 },
+          { weekday: 3, period: 2, length: 1 },
+          { weekday: 5, period: 2, length: 1 },
+        ],
+      },
+      {
+        label: 'Spanisch',
+        name: 'Spanisch',
+        teacher: 'MK',
+        slots: [
+          { weekday: 1, period: 3, length: 1 },
+          { weekday: 3, period: 2, length: 1 },
+          { weekday: 5, period: 2, length: 1 },
+        ],
+      },
+      { label: 'keine' },
+    ],
+  },
+  {
+    id: 'religion',
+    icon: '✝️',
+    question: 'Religion oder Ethik?',
+    options: [
+      {
+        label: 'Religion',
+        name: 'Religion',
+        teacher: 'DIR',
+        slots: [
+          { weekday: 1, period: 4, length: 1 },
+          { weekday: 3, period: 5, length: 1 },
+        ],
+      },
+      {
+        label: 'Ethik',
+        name: 'Ethik',
+        teacher: 'MS',
+        slots: [
+          { weekday: 1, period: 4, length: 1 },
+          { weekday: 3, period: 5, length: 1 },
+        ],
+      },
+      { label: 'keines' },
+    ],
+  },
+  {
+    id: 'artmusic',
+    icon: '🎨',
+    question: 'Musik oder Zeichnen? (Fr 3./4.)',
+    options: [
+      {
+        label: 'Musik',
+        name: 'Musik',
+        teacher: 'MA',
+        slots: [{ weekday: 5, period: 3, length: 2 }],
+      },
+      {
+        label: 'Zeichnen',
+        name: 'Zeichnen',
+        teacher: 'WR',
+        slots: [{ weekday: 5, period: 3, length: 2 }],
+      },
+      { label: 'keines' },
+    ],
+  },
+]
+
+/** Alle Fach-Namen die von Quick-Gruppen verwaltet werden. */
+export const QUICK_GROUP_NAMES = new Set(
+  QUICK_SETUP_GROUPS.flatMap((g) => g.options.flatMap((o) => (o.name ? [o.name] : []))),
+)
 
 // ── Lehrkräfte (Kürzel → Vollständiger Name) ────────────────
 // Quelle: https://www.werndlpark.at/index.php/schule/personen/lehrer-innen
